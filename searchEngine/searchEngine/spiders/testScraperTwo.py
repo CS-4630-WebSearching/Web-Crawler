@@ -4,13 +4,14 @@ from scrapy.http import Request
 from urllib.request import urlopen
 import os
 import csv
+import sys
 
 class StartSpider(scrapy.Spider):
 
       #name of the spider
     name = "start_Spider"
     #where spider will start crawling
-    start_urls = ['https://www.cnn.com/us']
+    start_urls = ['https://it.wikipedia.org/wiki/Pagina_principale']
 
     urlName = " "
     count = 0
@@ -29,14 +30,13 @@ class StartSpider(scrapy.Spider):
             self.urlName = fixedURL
 
             if fixedURL is not None:
-                if self.count <= 10:
                 #storenew_html(fixedURL, self.count)
                     yield scrapy.Request(fixedURL, callback=self.parse_All_Links)
     
     def parse_All_Links(self, response):
         ur = response.request.url
         directoryPath = "/Users/Bluck/Documents/Python Projects/searchEngine/searchEngine/spiders/report"
-        directoryPathTwo = "/Users/Bluck/Documents/Python Projects/searchEngine/searchEngine/spiders/parsed html docs"
+        directoryPathTwo = "/Users/Bluck/Documents/Python Projects/searchEngine/searchEngine/spiders/repository"
         links = response.xpath('*//a/@href').extract()
         linkCounter = 0
 
@@ -57,10 +57,8 @@ class StartSpider(scrapy.Spider):
             append_html(''.join(urlTexts), self.count, directoryPathTwo)    
         
         self.count += 1
-        print(self.count)
 
         for link in links:
-            if self.count <= 25:
                 outf = open('htmlData.txt', 'a')
                 
                 fixedURL = response.urljoin(link[0:])
@@ -68,7 +66,11 @@ class StartSpider(scrapy.Spider):
                     linkCounter += 1
                     outf.write(fixedURL + "\n")           
                     yield scrapy.Request(fixedURL, callback=self.parse_All_Links)
-            generate_report(ur, "report", directoryPath, linkCounter)
+
+        #generate report
+        generate_report(ur, "report", directoryPath, linkCounter)
+        if self.count == 500:
+            sys.exit("GOT CERTAIN AMOUNT OF FILES")
             
 #create the file for storing parsed html text
 def storenew_html(text, fileName, directoryPath):
